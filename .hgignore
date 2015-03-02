@@ -1,0 +1,13 @@
+syntax: glob
+*.aux
+*.gz
+*.tar
+*.log
+*.pdf
+*.bbl
+*.blg
+*.nav
+*.snm
+*.backup
+*.toc
+
