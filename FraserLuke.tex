@@ -9,6 +9,7 @@
 \usepackage{algorithmic}
 \usepackage{algorithm}
 \usepackage{array}
+\usepackage{flushend}
 
 \ifCLASSOPTIONcompsoc
   \usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
@@ -37,8 +38,46 @@ Task planning in robotics is a difficult problem. The problem of task planning i
 \end{abstract}
 
 \section{Introduction}
-As robots progress it is becoming more important for them to work side by side with people \cite{Breazeal2004}. I order for robots to work along side humans it is important that they are capable of understanding tasks as well as working towards an end goal.
+As robots progress it is becoming more important for them to work side by side with people \cite{Breazeal2004}. In order for robots to work along side humans they must be capable of understanding tasks as well as working towards an end goal. A scheme must be defined must be defined to represent tasks. This task representation is a complicated structure of dependencies as well as behaviors.
 
+\subsection{Single Robot}
+A behavior is a small sub-goal of a given task, such as \emph{travel-to-a-location}, \emph{lift-arm}, \emph{grasp}, \emph{turn-handle}, etc. A combination of behaviors can work together to complete any given task. If a goal for a task was to pick up a cup and move to a location, then a robot could grasp the cup, lift their arm, and travel to the location. This is a representation of a sequential description of behaviors to complete a given goal. More complex task place different dependencies on different behaviors. In order to handle more complex tasks a better task description is necessary. Overall the task description should be used to describe how the robot should operate on the given task to achieve the goal.
+
+Complex tasks are not always sequential and a true understanding of a task requires requires that the robot should be able to operate on many tasks at once similar to how people perform behaviors. An example of such a task is the construction of a small block Parthenon. The components of this building being pillars, base, and roof. It is trivial for people to understand that the pillars are not dependant on any of the other pillars. Meaning that any of the pillars can be placed at any time. A robot with simple sequential understanding of a task would only know to place a specific pillar after the next until all the pillars are in place. This limitation does not typically effect single robot scenarios unless the robot is capable of multiple pillar placement at a time. In multi-robot collaborative tasks this understanding will not work.
+
+\subsection{Multiple Robots}
+A multi-robot system unlike a single-robot system must interact and communicate with the other robots in the system to some capacity in order to schedule events and complete the overall goal in a collaborative matter. The purpose of multi-robot systems is to provide a way to complete tasks that a single robot cannot complete by itself or to improve the performance of the system through parallel behavior action. There are two types of multi-robot systems, centralized and distributed.
+
+\subsubsection{Centralized}
+A centralized multi-robot system has a single leader robot that schedules all of the tasks for all other robots. This maintains the goal and task states on the single unified source that is able to have full control over the other robots. This presents several draw backs. A centralized system has a single point of failure. If the main server robot goes down the entire system collapses and the task cannot be completed. As the number of robots and the complexity of the task increase the computation of the system becomes to great and planning will bring the system to a stand still. The main benefit being that it is easier to develop a centralized systems as it is simpler to control and manage communication.
+
+\subsubsection{Distributed}
+A distributed multi-robot system completes a task goal with ever robot contributing to the overall plan and success of the goal. Each robot plans and schedules its own tasks based on what other robots are performing in the system. Distributed systems have been used in many areas of robotics to complete complex goals. Flocking behaviors as well as distributed multi-robot mapping schemes that reduce error due to noise and converge to the ground truth have been used on large scalable systems. For large complex tasks a distributed network is more scalable than a centralized alternative.
+
+In order for a distributed system to properly converge to the goal of the state each robot need to communicate to some degree with the robots in the system. Without communication each robot would have no ability to know which part of the task was being performed by any of the other robots. This communication is similar to how humans complete collaborative tasks. Different people will tell others the task they have decided to work on. The others make note of this and do not attempt to perform the same action redundantly.
+
+\section{Proposed Approach}
+In the remaining sections we discuss a proposed approach to a task representation and scheduling problem for multi-robot distributed, collaborative systems.
+
+\subsection{Representation}
+It is important that the task representation is able to handle many complex relationships and dependencies between behaviors. Four control behaviors can be used to represtn complex task dependencies. These control nodes/behaviors are defined as:
+\begin{itemize}
+\item Then: The ``Then'' node signifies a dependency where a certain behavior must occur and then another can. such as $(a~Then~b)$
+\item While: The ``While'' node signifies a dependency where a certain behavior must occur while another is operating. Such as $(a~While~b)$
+\item And: The ``And'' node signifies a dependency where a certain behaviors all must happen, but the order and time at which they happen is independent.
+\item OR: The ``Or'' node signifies a dependency where one of the listed behaviors must occur, but not all.
+\end{itemize}
+With the use of these nodes complex task descriptions can be generated:
+$$(a~Then~(b~And~(c~while~d)))$$
+These description allow the example of the Parthenon task above to be represented with proper dependency that allow parallel operations to occur. This makes it possible for a each robot in a multi-robot system to place one of the pillars at the same time instead of one after another. This improves performance and allows for a more general task description. These task expressions can then be converted into a node graph to be executed on each robot.
+
+\subsection{Execution}
+On the robot the task expression is converted into a node based tree graph. Each behavior and control behavior are nodes in the graph and perform activation spreading in order to signal when a specific behavior should fire and become active. Each robot will have its own representation of the task tree stored in memory. As different behaviors finish they will send messages to their parent signally their completion. this is how a given node is able to finish. In the case of an ``And'' node once all of its child nodes are complete it can send a finish message to its parent.
+
+To enable multiple robots to communicate in a distributed fashion each node itself has connection with its peer copies on the other robots. When a robot starts a specific behavior that behavior will signal to the peer behaviors on the other robots that it is active. In doing so the behavior will also go active on the other robots without operating the robots actuators. This premises of activation is similar to mirror neurons in the human brain. Through message passing and activation spreading the robots involved should be able to complete an arbitrary task collaboratively.
+
+\section{Future Work}
+After this project is completed future work could be introduced to add humans into the task domain. Humans being apart of the system pose a preception problem. The robots communicate perfectly between themselves and know at any given moment what any other robot is doing. However, with people involved the robots in the system will only know what a particular person is doing after observing them. The representation and system should generalize well to this case, but experiments will need to be devised to test this ability.
 
 \bibliographystyle{IEEEtran}
 \bibliography{../refs/master.bib}
